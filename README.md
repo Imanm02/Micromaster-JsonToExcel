@@ -107,3 +107,41 @@ for file_code, sheet_name in json_files.items():
     writer.save()
 ```
 
+## Usage
+
+To run the script, make sure the JSON files are located in the same directory as the script, then simply execute the script with a Python interpreter. You'll need to have `json`, `pandas`, and `openpyxl` installed in your Python environment.
+
+The script is designed to parse JSON files with a specific structure, so ensure your files follow the expected format. Here's an example of how the JSON file should be structured:
+
+```python
+{
+  "courses": [
+    {
+      "name": "Course Name",
+      "code": "Course Code",
+      "current_group": [
+        {
+          "students": [
+            {
+              "id": "Student ID",
+              "name": "Name",
+              "surname": "Surname",
+              "gender": "Gender",
+              "email": "Email",
+              "mobile_number": "Mobile Number",
+              "national_code": "National Code",
+              "phone_number": "Phone Number",
+              "pivot": {
+                "status": "Status"
+              }
+            },
+            ...
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+
+If your JSON files are structured differently, you must modify the script accordingly.
