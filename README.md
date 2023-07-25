@@ -113,7 +113,7 @@ To run the script, make sure the JSON files are located in the same directory as
 
 The script is designed to parse JSON files with a specific structure, so ensure your files follow the expected format. Here's an example of how the JSON file should be structured:
 
-```python
+```json
 {
   "courses": [
     {
