@@ -8,3 +8,102 @@ This repository contains a Python script designed to efficiently extract registr
 - **Excel Export**: The extracted data is exported to an Excel file, making it easy to analyze and share the registration information.
 - **Automation**: The script is built to automate the data extraction process, saving users time and effort.
 
+## Code Walkthrough
+
+Here is a section-by-section walkthrough of the script:
+
+1. **Importing libraries**: The first section of the code imports necessary libraries. We use `json` for parsing JSON files, `pandas` for data manipulation and writing to Excel, and `openpyxl` for handling Excel-specific operations such as formatting.
+
+```python
+import json
+import pandas as pd
+from openpyxl.styles import Alignment, Font, PatternFill
+from openpyxl.utils import get_column_letter
+import openpyxl
+from openpyxl.styles import numbers
+```
+
+2. **Loading and parsing JSON files**: The next part of the code loads and parses the JSON files. We open each file, load its content as a Python dictionary, and extract the necessary fields.
+
+```python
+json_files = {"1010": "برنامه‌سازی پیشرفته", "1014": "داده‌ساختارها و الگوریتم‌ها", 
+              "2010": "برنامه‌سازی پایتون", "2011": "ساختارهای گسسته",
+              "3010": "برنامه‌سازی برای تحلیل داده", "3012": "ریاضیات هوش مصنوعی"}
+
+writer = pd.ExcelWriter('output.xlsx', engine='openpyxl')
+
+for file_code, sheet_name in json_files.items():
+    with open(f'{file_code}.json') as f:
+        json_data = json.load(f)
+```
+
+3. **Data extraction and DataFrame creation**: After we have the necessary data, we store it in a pandas DataFrame. Pandas is a powerful tool for handling tabular data, enabling us to write this data into an Excel file easily.
+
+```python
+    course_name = json_data["courses"][0]["name"]
+    course_code = json_data["courses"][0]["code"]
+    students = json_data["courses"][0]["current_group"][0]["students"]
+
+    data = {
+        "Course Name": [course_name] * len(students),
+        "Course Code": [course_code] * len(students),
+        "Student ID": [student["id"] for student in students],
+        "Name": [student["name"] for student in students],
+        "Surname": [student["surname"] for student in students],
+        "Gender": [student["gender"] for student in students],
+        "Email": [student["email"] for student in students],
+        "Mobile Number": [student["mobile_number"] for student in students],
+        "National Code": [student["national_code"] for student in students],
+        "Phone Number": [student["phone_number"] for student in students],
+        "Status": ['ثبت‌نام' if student["pivot"]["status"] == 'pending' else 'کردیت' for student in students],
+    }
+
+    df = pd.DataFrame(data)
+```
+
+4. **Manipulating and writing data to Excel**: Once the DataFrame has been prepared, we can sort it and write it to an Excel file. Each DataFrame will be written to a new sheet in the Excel file.
+
+```python
+    df.sort_values(by=['Status'], inplace=True)
+    df.to_excel(writer, sheet_name=sheet_name, index=False)
+```
+
+5. **Formatting Excel file**: In the final step, we load the Excel file again to apply some formatting rules, which include setting cell alignment, fill color, font, and column width.
+
+```python
+    book = load_workbook('output.xlsx')
+    writer.book = book
+
+    sheet = writer.sheets[sheet_name]
+
+    for column in sheet.columns:
+        max_length = 0
+        column = [cell for cell in column]
+        for cell in column:
+            try:
+                if len(str(cell.value)) > max_length:
+                    max_length = len(cell.value)
+            except:
+                pass
+        adjusted_width = (max_length + 2)
+        sheet.column_dimensions[column[0].column_letter].width = adjusted_width
+
+    alignment=Alignment(horizontal='center', vertical='center')
+    fill_title = PatternFill(start_color='FFFF99', end_color='FFFF99', fill_type='solid')
+    fill_data = PatternFill(start_color='CCFFCC', end_color='CCFFCC', fill_type='solid')
+    font = Font(name='Vazir')
+
+    for row in sheet.iter_rows():
+        for cell in row:
+            cell.alignment = alignment
+            cell.font = font
+            if cell.row == 1:
+                cell.fill = fill_title
+            else:
+                cell.fill = fill_data
+            if isinstance(cell.value, int):
+                cell.number_format = '0'
+
+    writer.save()
+```
+
